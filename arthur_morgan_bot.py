@@ -4,7 +4,6 @@ import json
 import random
 import time
 import re
-from pprint import pprint
 
 with open("arthur_quotes.json") as jsfile:
     arthur_quotes = json.load(jsfile)
@@ -23,32 +22,29 @@ with open("replied_posts.txt") as txtfile:
         if post is not '':
             replied_posts.append(post)
 
-# pprint(replied_posts)
-
 r = praw.Reddit("ambot") # change according to name of bot in praw.ini
-subr = r.subreddit("pythonforengineers") # playground subreddit. change accordingly
+subr = r.subreddit("reddeadredemption") # change accordingly
 
 
-def ids_to_file(replied_posts):
+def ids_to_file(r_list):
     with open("replied_posts.txt", "w") as file:
-        for p_id in replied_posts:
+        for p_id in r_list:
             file.write(p_id + "\n")
 
 
 for post in subr.hot(limit=10):
-    # print("Title: " + post.title)
-    p = r.submission(post.id)
-    if post.id not in replied_posts:
-        for comment in p.comments:
-            if re.search("Arthur", comment.body, re.IGNORECASE):
-                print(comment.body)
-                arthur_says = random.choice(q_list)
-                print(arthur_says)
-                comment.reply(arthur_says)
-                replied_posts.append(post.id)
-                time.sleep(30) # prevent harmful spamming
+    print("Title: " + post.title)
+    p_id = r.submission(post.id)
+    if p_id not in replied_posts:
+        for comment in p_id.comments:
+            for reply in comment.replies:
+                if re.search("Arthur", comment.body, re.IGNORECASE):
+                    print("comment: " + comment.body)
+                    arthur_says = random.choice(q_list)
+                    print(arthur_says)
+                    comment.reply(arthur_says)
+                    # time.sleep(3) # prevent harmful spamming
+        replied_posts.append(post.id)
         ids_to_file(replied_posts) # puts post id in file after replying to all relevant comments
-    else:
-        pass
-    
-   
+
+
